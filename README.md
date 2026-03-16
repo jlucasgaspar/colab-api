@@ -17,7 +17,7 @@ NestJS · TypeScript · PostgreSQL · Drizzle ORM · Passport JWT · Google Gemi
 ### 1. Clone e instale
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/jlucasgaspar/colab-api.git
 cd colab-api
 npm install
 ```
