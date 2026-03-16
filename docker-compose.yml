@@ -10,6 +10,18 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  minio:
+    image: minio/minio
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
   api:
     build: .
     ports:
@@ -18,8 +30,12 @@ services:
       - .env
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/colab
+      STORAGE_ENDPOINT: http://minio:9000
+      STORAGE_PUBLIC_URL: http://localhost:9000
     depends_on:
       - db
+      - minio
 
 volumes:
   pgdata:
+  minio_data:

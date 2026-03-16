@@ -7,12 +7,14 @@ import { UsersModule } from './users/users.module';
 import { ReportsModule } from './reports/reports.module';
 import { AiModule } from './ai/ai.module';
 import { UploadModule } from './upload/upload.module';
+import { StorageModule } from './storage/storage.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
+    StorageModule,
     AuthModule,
     UsersModule,
     ReportsModule,
