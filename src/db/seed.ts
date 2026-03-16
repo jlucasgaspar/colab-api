@@ -9,8 +9,8 @@ async function main() {
   const client = postgres(process.env.DATABASE_URL!, { max: 1 });
   const db = drizzle(client);
 
-  const email = process.env.ADMIN_EMAIL || 'adm@adm.com';
-  const password = process.env.ADMIN_PASSWORD || 'admin123';
+  const email = 'adm@adm.com';
+  const password = 'admin123';
 
   const existing = await db.select().from(users).where(eq(users.email, email));
 
