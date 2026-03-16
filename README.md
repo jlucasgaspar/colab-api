@@ -124,6 +124,38 @@ STORAGE_REGION=us-east-1
 STORAGE_BUCKET=seu-bucket
 ```
 
+## Arquitetura
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                        Client (HTTP)                         │
+└────────────────────────────┬─────────────────────────────────┘
+                             │
+                  ┌──────────▼──────────┐
+                  │   JwtAuthGuard      │  ← Guard global: toda rota exige JWT
+                  │   (APP_GUARD)       │    exceto as marcadas com @Public()
+                  └──────────┬──────────┘
+                             │
+          ┌──────────────────┼──────────────────┐
+          │                  │                  │
+  ┌───────▼──────┐  ┌───────▼──────┐  ┌───────▼──────┐
+  │ AuthModule   │  │ ReportsModule│  │ UploadModule │
+  │  /auth/*     │  │  /reports/*  │  │  /upload/*   │
+  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘
+         │                 │                  │
+         │          ┌──────▼──────┐   ┌──────▼──────┐
+         │          │  AiModule   │   │StorageModule│
+         │          │  (Gemini)   │   │ (S3/MinIO)  │
+         │          └─────────────┘   └─────────────┘
+         │                 │                  │
+  ┌──────▼─────────────────▼──────────────────▼─────┐
+  │              DatabaseModule (Drizzle ORM)        │
+  │                    PostgreSQL                    │
+  └─────────────────────────────────────────────────┘
+```
+
+O projeto segue a arquitetura modular do NestJS, onde cada domínio (Auth, Reports, Upload) é um módulo isolado com seu próprio controller e service. A autenticação é tratada por um **guard global JWT** registrado como `APP_GUARD`, garantindo que todas as rotas sejam protegidas por padrão — rotas públicas (login, registro) são explicitamente liberadas com o decorator `@Public()`. Rotas administrativas usam um `RolesGuard` adicional combinado com `@Roles('ADMIN')`. O acesso a dados passa pelo **Drizzle ORM** com schema declarativo e migrations versionadas, mantendo type-safety de ponta a ponta. Quando um cidadão cria uma solicitação, o **AiModule** envia título e descrição para a API do Google Gemini, que devolve categoria, prioridade e resumo técnico automaticamente — essa triagem inteligente é o diferencial da aplicação. Arquivos de imagem são enviados ao **StorageModule**, que abstrai MinIO (desenvolvimento) e AWS S3 (produção) sob a mesma interface, permitindo troca de provider apenas via variável de ambiente.
+
 ## Documentação detalhada
 
 - [Visão geral](docs/overview.md)
