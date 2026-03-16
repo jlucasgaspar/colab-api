@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { eq, desc } from 'drizzle-orm';
 import { DATABASE_TOKEN } from '../db/database.module';
 import { Database } from '../db';
@@ -39,6 +39,25 @@ export class ReportsService {
       .from(reports)
       .where(eq(reports.userId, userId))
       .orderBy(desc(reports.createdAt));
+  }
+
+  async findOne(id: string, userId: string, userRole: string) {
+    const result = await this.db
+      .select()
+      .from(reports)
+      .where(eq(reports.id, id));
+
+    if (result.length === 0) {
+      throw new NotFoundException('Solicitação não encontrada');
+    }
+
+    const report = result[0];
+
+    if (userRole !== 'ADMIN' && report.userId !== userId) {
+      throw new ForbiddenException('Você não tem acesso a esta solicitação');
+    }
+
+    return report;
   }
 
   async findAll() {

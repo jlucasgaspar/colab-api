@@ -40,6 +40,17 @@ export class ReportsController {
     return this.reportsService.findAll();
   }
 
+  @Get(':id')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN', 'USER')
+  findOne(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') userRole: string,
+  ) {
+    return this.reportsService.findOne(id, userId, userRole);
+  }
+
   @Patch(':id/status')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
