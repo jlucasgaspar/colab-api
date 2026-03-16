@@ -83,4 +83,17 @@ export class ReportsService {
 
     return result[0];
   }
+
+  async remove(id: string) {
+    const result = await this.db
+      .delete(reports)
+      .where(eq(reports.id, id))
+      .returning();
+
+    if (result.length === 0) {
+      throw new NotFoundException('Solicitação não encontrada');
+    }
+
+    return result[0];
+  }
 }

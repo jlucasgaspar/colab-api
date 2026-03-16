@@ -6,6 +6,7 @@ import {
   Param,
   Body,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ReportsService } from './reports.service';
@@ -59,5 +60,12 @@ export class ReportsController {
     @Body() dto: UpdateStatusDto,
   ) {
     return this.reportsService.updateStatus(id, dto.status);
+  }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  remove(@Param('id') id: string) {
+    return this.reportsService.remove(id);
   }
 }
