@@ -5,6 +5,7 @@ import {
   PutObjectCommand,
   CreateBucketCommand,
   HeadBucketCommand,
+  PutBucketPolicyCommand,
 } from '@aws-sdk/client-s3';
 import { StorageService } from './storage.interface';
 
@@ -42,7 +43,31 @@ export class MinioStorageService implements StorageService {
     } catch {
       this.logger.log(`Creating bucket "${this.bucket}"...`);
       await this.s3.send(new CreateBucketCommand({ Bucket: this.bucket }));
+    } finally {
+      await this.setPublicReadPolicy();
     }
+  }
+
+  private async setPublicReadPolicy(): Promise<void> {
+    const policy = {
+      Version: '2012-10-17',
+      Statement: [
+        {
+          Effect: 'Allow',
+          Principal: '*',
+          Action: ['s3:GetObject'],
+          Resource: [`arn:aws:s3:::${this.bucket}/*`],
+        },
+      ],
+    };
+
+    await this.s3.send(
+      new PutBucketPolicyCommand({
+        Bucket: this.bucket,
+        Policy: JSON.stringify(policy),
+      }),
+    );
+    this.logger.log(`Public read policy set on bucket "${this.bucket}"`);
   }
 
   async upload(buffer: Buffer, key: string, contentType: string): Promise<string> {
